@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- This is just background for the launcher, it can be any shape -->
+    <issue id="IconLauncherShape" severity="ignore" />
+
+    <!-- Some libraries can include obsolete lint checks. We can't do anything about that, so just ignore those -->
+    <issue id="ObsoleteLintCustomCheck" severity="ignore" />
+
+    <!-- We don't care about empty folders -->
+    <issue id="IconMissingDensityFolder" severity="ignore" />
+
+    <issue id="AllowBackup" severity="ignore" />
+    <issue id="GoogleAppIndexingWarning" severity="ignore" />
+</lint>

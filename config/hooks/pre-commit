@@ -1,0 +1,3 @@
+#!/bin/bash
+set -e
+./gradlew -q --parallel :buildSrc:detekt detektMain detektTest -x detektRelease -x detektReleaseUnitTest --continue
