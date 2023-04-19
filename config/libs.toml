@@ -6,13 +6,20 @@ androidx-core = "1.9.0"
 androidx-compose-compiler = "1.4.0"
 androidx-compose-runtime = "1.3.3"
 androidx-compose-material3 = "1.0.1"
+androidx-compose-wear = "1.1.2"
+androidx-fragment = "1.5.6"
 androidx-lifecycle = "2.5.1"
+androidx-wear = "1.2.0"
+anvil = "2.4.5"
+dagger = "2.45"
 detekt = "1.22.0"
+horologist-layout = "0.2.3"
 kotlin = "1.8.0"
 junit4 = "4.13.2"
 logcat = "0.1"
 moshi = "1.14.0"
 versionsChecker = "0.44.0"
+whetstone = "0.5.0"
 
 [libraries]
 androidGradleCacheFix = { module = "org.gradle.android.cache-fix:org.gradle.android.cache-fix.gradle.plugin", version.ref = "androidGradleCacheFix" }
@@ -27,14 +34,25 @@ androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "androidx-compose-runtime" }
 androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-compose-runtime" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "androidx-compose-material3" }
+androidx-compose-wear-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "androidx.compose.wear" }
+androidx-compose-wear-material = { module = "androidx.wear.compose:compose-material", version.ref = "androidx.compose.wear" }
+androidx-compose-wear-navigation = { module = "androidx.wear.compose:compose-navigation", version.ref = "androidx.compose.wear" }
+androidx-fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "androidx-fragment" }
+androidx-wear = { module = "androidx.wear:wear", version.ref = "androidx.wear" }
+dagger-runtime = { module = "com.google.dagger:dagger", version.ref = "dagger" }
+dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = "dagger" }
 detekt-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+horologist-layout = { module = "com.google.android.horologist:horologist-compose-layout", version.ref = "horologist.layout" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
 moshi-compiler = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
 moshi-runtime = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 versionsCheckerPlugin = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsChecker" }
+whetstone-compiler = { module = "com.deliveryhero.whetstone:whetstone-compiler", version.ref = "whetstone" }
+whetstone-runtime = { module = "com.deliveryhero.whetstone:whetstone", version.ref = "whetstone" }
 
 [plugins]
+anvil = { id = "com.squareup.anvil", version.ref = "anvil" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

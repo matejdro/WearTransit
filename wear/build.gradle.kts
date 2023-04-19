@@ -7,8 +7,10 @@ import com.android.build.api.variant.BuildConfigField
 plugins {
    id("com.android.application")
    id("kotlin-kapt")
+   id("kotlin-parcelize")
+   alias(libs.plugins.anvil)
    commonAndroid
-   compose
+   composeWear
 }
 
 android {
@@ -37,7 +39,6 @@ android {
          }
       }
    }
-
 
    signingConfigs {
       getByName("debug") {
@@ -76,13 +77,15 @@ android {
 dependencies {
    implementation(libs.androidx.activity.compose)
    implementation(libs.androidx.core)
-   implementation(libs.androidx.lifecycle.runtime)
+   implementation(libs.androidx.fragment)
+   implementation(libs.androidx.wear)
+   implementation(libs.dagger.runtime)
    implementation(libs.logcat)
-   implementation(libs.moshi.runtime)
+   implementation(libs.horologist.layout)
+   implementation(libs.whetstone.runtime)
 
-   kapt(libs.moshi.compiler)
-
-   testImplementation(libs.junit4)
+   kapt(libs.dagger.compiler)
+   anvil(libs.whetstone.compiler)
 }
 
 abstract class GitVersionTask : DefaultTask() {

@@ -30,3 +30,4 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "WearTransit"
 
 include(":mobile")
+include(":wear")
