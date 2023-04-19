@@ -223,7 +223,7 @@ exceptions:
   ObjectExtendsThrowable:
     active: false
   PrintStackTrace:
-    active: true
+    active: false
   RethrowCaughtException:
     active: true
   ReturnFromFinally:
@@ -574,7 +574,7 @@ potential-bugs:
     # Disabled until https://github.com/detekt/detekt/issues/5186 is resolved
     active: false
   UnsafeCallOnNullableType:
-    active: true
+    active: false
     excludes: *testFolders
   UnsafeCast:
     active: true

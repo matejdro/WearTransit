@@ -6,6 +6,7 @@ import com.android.build.api.variant.BuildConfigField
 
 plugins {
    id("com.android.application")
+   id("kotlin-kapt")
    commonAndroid
    compose
 }
@@ -15,7 +16,7 @@ android {
 
    defaultConfig {
       applicationId = "com.matejdro.weartransit"
-      minSdk = 24
+      minSdk = 26
       targetSdk = 33
       versionCode = 1
       versionName = "1.0"
@@ -77,6 +78,10 @@ dependencies {
    implementation(libs.androidx.activity.compose)
    implementation(libs.androidx.core)
    implementation(libs.androidx.lifecycle.runtime)
+   implementation(libs.logcat)
+   implementation(libs.moshi.runtime)
+
+   kapt(libs.moshi.compiler)
 
    testImplementation(libs.junit4)
 }

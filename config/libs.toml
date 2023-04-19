@@ -10,6 +10,8 @@ androidx-lifecycle = "2.5.1"
 detekt = "1.22.0"
 kotlin = "1.8.0"
 junit4 = "4.13.2"
+logcat = "0.1"
+moshi = "1.14.0"
 versionsChecker = "0.44.0"
 
 [libraries]
@@ -29,8 +31,10 @@ detekt-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", v
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
+moshi-compiler = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
+moshi-runtime = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 versionsCheckerPlugin = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsChecker" }
 
 [plugins]
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-
