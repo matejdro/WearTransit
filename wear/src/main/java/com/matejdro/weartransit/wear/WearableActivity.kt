@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalComposeUiApi::class)
+
 package com.matejdro.weartransit.wear
 
 import android.os.Bundle
@@ -5,6 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +18,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,6 +55,7 @@ import com.matejdro.weartransit.wear.util.ambient.AmbientScreen
 import com.matejdro.weartransit.wear.util.ambient.AmbientState
 import com.matejdro.weartransit.wear.util.ambient.LocalAmbientCallbackController
 import com.matejdro.weartransit.wear.util.ambient.ProvideTestAmbientController
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -86,6 +98,9 @@ class WearableActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackP
 
 @Composable
 fun TransitScreen(time: LocalTime, steps: List<TransitStepUi>, modifier: Modifier = Modifier) {
+   val scope = rememberCoroutineScope()
+   val focusRequester = remember { FocusRequester() }
+
    val activeIndex = steps.indexOfFirst { it is TransitStepUi.Ride && time in it.startTime..it.endTime }.takeIf { it >= 0 }
    val state = rememberScalingLazyListState(
       initialCenterItemIndex = activeIndex?.plus(1) ?: 0,
@@ -103,7 +118,18 @@ fun TransitScreen(time: LocalTime, steps: List<TransitStepUi>, modifier: Modifie
          TimeText(timeSource = timeSource)
       },
       content = {
-         ScalingLazyColumn(state = state) {
+         ScalingLazyColumn(
+            state = state,
+            modifier = Modifier
+               .onRotaryScrollEvent {
+                  scope.launch {
+                     state.scrollBy(it.verticalScrollPixels)
+                  }
+                  true
+               }
+               .focusRequester(focusRequester)
+               .focusable(),
+         ) {
             item {
                Spacer(Modifier.height(32.dp))
             }
@@ -124,6 +150,10 @@ fun TransitScreen(time: LocalTime, steps: List<TransitStepUi>, modifier: Modifie
          }
       }
    )
+
+   LaunchedEffect(Unit) {
+      focusRequester.requestFocus()
+   }
 }
 
 @Composable
