@@ -52,7 +52,11 @@ class WearableViewModel(application: Application) : AndroidViewModel(application
                   }
 
                   Mode.MODE_START -> {}
-                  Mode.MODE_DESTINATION -> {}
+                  Mode.MODE_DESTINATION -> {
+                     if (emitWalk) {
+                        add(TransitStepUi.Walk(step.to_location.orEmpty()))
+                     }
+                  }
                }
             }
          }
