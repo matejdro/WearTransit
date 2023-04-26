@@ -29,5 +29,6 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "WearTransit"
 
+include(":common")
 include(":mobile")
 include(":wear")

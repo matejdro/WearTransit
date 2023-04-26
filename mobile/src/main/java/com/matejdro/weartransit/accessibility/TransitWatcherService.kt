@@ -1,18 +1,35 @@
 package com.matejdro.weartransit.accessibility
 
 import android.accessibilityservice.AccessibilityService
+import android.annotation.SuppressLint
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
+import com.google.android.gms.wearable.PutDataRequest
+import com.google.android.gms.wearable.Wearable
 import com.matejdro.weartransit.JavaTimeMoshiAdapter
-import com.squareup.moshi.JsonClass
+import com.matejdro.weartransit.common.CommPaths
+import com.matejdro.weartransit.common.toProtobuf
+import com.matejdro.weartransit.model.Mode
+import com.matejdro.weartransit.model.TransitStep
+import com.matejdro.weartransit.model.TransitSteps
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.internal.Util
+import com.squareup.wire.WireJsonAdapterFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.tasks.await
 import logcat.logcat
+import si.inova.kotlinova.core.data.Debouncer
+import si.inova.kotlinova.core.time.DefaultTimeProvider
 import java.time.LocalTime
 
 class TransitWatcherService : AccessibilityService() {
-   private val moshi = Moshi.Builder().add(JavaTimeMoshiAdapter).build()
+   private val moshi = Moshi.Builder().add(JavaTimeMoshiAdapter).add(WireJsonAdapterFactory()).build()
+   private val scope = CoroutineScope(Job() + Dispatchers.Main.immediate)
+   private val debouncer = Debouncer(scope, DefaultTimeProvider, debouncingTimeMs = 1_000L)
 
    private var currentSteps = emptyList<TransitStep>()
 
@@ -29,23 +46,44 @@ class TransitWatcherService : AccessibilityService() {
       if (source.viewIdResourceName?.contains("details_cardlist") == true) {
          val steps = source.extractTransitSteps(log = true)
          if (steps != null && steps.isNotEmpty()) {
+            val oldSteps = currentSteps
             val mergedSteps = currentSteps.mergeWith(steps)
             currentSteps = mergedSteps
+
             val adapter =
                moshi.adapter<List<TransitStep>>(Util.ParameterizedTypeImpl(null, List::class.java, TransitStep::class.java))
 
             logcat { "Steps: ${adapter.toJson(mergedSteps)}" }
 
-            if (mergedSteps.firstOrNull()?.mode == Mode.START && mergedSteps.lastOrNull()?.mode == Mode.DESTINATION) {
+            if (mergedSteps.firstOrNull()?.mode == Mode.MODE_START && mergedSteps.lastOrNull()?.mode == Mode.MODE_DESTINATION) {
                logcat { "COMPLETE" }
-               Toast.makeText(this, "Transit Captured", Toast.LENGTH_SHORT).show()
+               if (oldSteps != mergedSteps) {
+                  sendToWatch(mergedSteps)
+               }
             }
          }
       }
 //      logcat { "Change ${source.viewIdResourceName} ${source.toJson()}" }
    }
 
+   @SuppressLint("VisibleForTests")
+   private fun sendToWatch(steps: List<TransitStep>) {
+      debouncer.executeDebouncing {
+         Wearable.getDataClient(this@TransitWatcherService).putDataItem(
+            PutDataRequest.create(CommPaths.TRANSIT_STEPS)
+               .setData(TransitSteps(steps).encode())
+         ).await()
+
+         Toast.makeText(this, "Transit Sent to Watch", Toast.LENGTH_SHORT).show()
+      }
+   }
+
    override fun onInterrupt() {}
+
+   override fun onDestroy() {
+      scope.cancel()
+      super.onDestroy()
+   }
 }
 
 fun AccessibilityNodeInfo.toJson(): String {
@@ -75,7 +113,7 @@ private fun AccessibilityNodeInfo.extractTransitSteps(log: Boolean): List<Transi
             val walkMatch = WALK_REGEX.find(description)
             if (walkMatch != null) {
                if (log) logcat { "  WALK ${walkMatch.groupValues.elementAt(1)} MINUTES" }
-               steps += TransitStep(Mode.WALK, minutes = walkMatch.groupValues.elementAt(1).toInt())
+               steps += TransitStep(Mode.MODE_WALK, minutes = walkMatch.groupValues.elementAt(1).toInt())
             }
             continue
          }
@@ -90,15 +128,15 @@ private fun AccessibilityNodeInfo.extractTransitSteps(log: Boolean): List<Transi
 
             steps += if (startStep) {
                TransitStep(
-                  Mode.START,
-                  fromTime = time,
-                  fromLocation = location.toString()
+                  Mode.MODE_START,
+                  from_time = time.toProtobuf(),
+                  from_location = location.toString()
                )
             } else {
                TransitStep(
-                  Mode.DESTINATION,
-                  toTime = time,
-                  toLocation = location.toString()
+                  Mode.MODE_DESTINATION,
+                  to_time = time.toProtobuf(),
+                  to_location = location.toString()
                )
             }
 
@@ -142,13 +180,13 @@ private fun AccessibilityNodeInfo.extractTransitSteps(log: Boolean): List<Transi
             }
 
             steps += TransitStep(
-               Mode.RIDE,
-               fromTime = departureTime,
-               toTime = endTime,
-               fromLocation = startLocation,
-               toLocation = endLocation,
-               lineNumber = line.toString(),
-               lineDescription = lineName.toString()
+               Mode.MODE_RIDE,
+               from_time = departureTime.toProtobuf(),
+               to_time = endTime.toProtobuf(),
+               from_location = startLocation,
+               to_location = endLocation,
+               line_name = line.toString(),
+               line_description = lineName.toString()
             )
 
             continue
@@ -220,7 +258,7 @@ private fun AccessibilityNodeInfo.insertFullText(builder: StringBuilder, include
 
 private fun List<TransitStep>.mergeWith(other: List<TransitStep>): List<TransitStep> {
    forEachIndexed { thisIndex, thisTransitStep ->
-      if (thisTransitStep.fromTime == null && thisTransitStep.toTime == null) {
+      if (thisTransitStep.from_time == null && thisTransitStep.to_time == null) {
          return@forEachIndexed
       }
 
@@ -237,25 +275,6 @@ private fun List<TransitStep>.mergeWith(other: List<TransitStep>): List<TransitS
 
    logcat { "NO MATCH" }
    return other
-}
-
-@JsonClass(generateAdapter = true)
-data class TransitStep(
-   val mode: Mode,
-   val fromTime: LocalTime? = null,
-   val toTime: LocalTime? = null,
-   val minutes: Int? = null,
-   val fromLocation: String? = null,
-   val toLocation: String? = null,
-   val lineNumber: String? = null,
-   val lineDescription: String? = null,
-)
-
-enum class Mode {
-   START,
-   RIDE,
-   WALK,
-   DESTINATION
 }
 
 private val LOCATION_AND_TIME_REGEX = Regex("(.+).? [0-9]{2}:[0-9]{2}")

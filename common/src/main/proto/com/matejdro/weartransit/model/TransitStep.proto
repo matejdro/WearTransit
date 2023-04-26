@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package com.matejdro.weartransit.model;
+
+message TransitSteps {
+    repeated TransitStep steps = 1;
+}
+
+message TransitStep {
+    Mode mode = 1;
+    optional LocalTimeProto from_time = 2;
+    optional LocalTimeProto to_time = 3;
+    optional uint32 minutes = 4;
+    optional string from_location = 5;
+    optional string to_location = 6;
+    optional string line_name = 7;
+    optional string line_description = 8;
+}
+
+enum Mode {
+    MODE_START = 0;
+    MODE_RIDE = 1;
+    MODE_WALK = 2;
+    MODE_DESTINATION = 3;
+}
+
+message LocalTimeProto {
+    uint32 hours = 1;
+    uint32 minutes = 2;
+    uint32 seconds = 3;
+}

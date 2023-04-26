@@ -74,11 +74,18 @@ android {
 }
 
 dependencies {
+   implementation(projects.common)
+
    implementation(libs.androidx.activity.compose)
    implementation(libs.androidx.core)
    implementation(libs.androidx.lifecycle.runtime)
+   implementation(libs.kotlin.coroutines.playServices)
+   implementation(libs.kotlinova.core)
    implementation(libs.logcat)
    implementation(libs.moshi.runtime)
+   implementation(libs.playServices.wear)
+   implementation(libs.wire.runtime)
+   implementation(libs.wire.moshi)
 
    kapt(libs.moshi.compiler)
 

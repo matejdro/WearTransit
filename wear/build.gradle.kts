@@ -75,13 +75,17 @@ android {
 }
 
 dependencies {
+   implementation(projects.common)
+
    implementation(libs.androidx.activity.compose)
    implementation(libs.androidx.core)
    implementation(libs.androidx.fragment)
    implementation(libs.androidx.wear)
+   implementation(libs.kotlin.coroutines.playServices)
    implementation(libs.dagger.runtime)
    implementation(libs.logcat)
    implementation(libs.horologist.layout)
+   implementation(libs.playServices.wear)
    implementation(libs.whetstone.runtime)
 
    kapt(libs.dagger.compiler)

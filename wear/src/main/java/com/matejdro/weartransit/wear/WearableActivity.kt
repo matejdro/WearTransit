@@ -2,6 +2,7 @@ package com.matejdro.weartransit.wear
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -9,8 +10,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +23,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.ambient.AmbientModeSupport
 import androidx.wear.compose.material.Card
 import androidx.wear.compose.material.Icon
@@ -31,18 +36,19 @@ import androidx.wear.compose.material.TimeSource
 import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.material.items
 import androidx.wear.compose.material.rememberScalingLazyListState
-import com.deliveryhero.whetstone.Whetstone
-import com.deliveryhero.whetstone.activity.ContributesActivityInjector
 import com.matejdro.weartransit.R
 import com.matejdro.weartransit.theme.WearAppTheme
-import com.matejdro.weartransit.wear.model.TransitStep
+import com.matejdro.weartransit.wear.model.TransitStepUi
 import com.matejdro.weartransit.wear.util.ambient.AmbientCallbackController
+import com.matejdro.weartransit.wear.util.ambient.AmbientScreen
 import com.matejdro.weartransit.wear.util.ambient.AmbientState
 import com.matejdro.weartransit.wear.util.ambient.LocalAmbientCallbackController
 import com.matejdro.weartransit.wear.util.ambient.ProvideTestAmbientController
+import java.time.Instant
 import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
-@ContributesActivityInjector
 class WearableActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvider {
    private val ambientCallbackController = AmbientCallbackController()
 
@@ -50,26 +56,41 @@ class WearableActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackP
       return ambientCallbackController
    }
 
+   @OptIn(ExperimentalLifecycleComposeApi::class)
    override fun onCreate(savedInstanceState: Bundle?) {
-      Whetstone.inject(this)
       super.onCreate(savedInstanceState)
 
       AmbientModeSupport.attach(this)
 
       setContent {
+         CompositionLocalProvider(LocalAmbientCallbackController provides ambientCallbackController) {
+            val viewModel by viewModels<WearableViewModel>()
+            AmbientScreen(
+               Modifier.fillMaxSize(),
+            ) { modifier: Modifier, _, instant: Instant ->
+               val localTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalTime()
+
+               TransitScreen(
+                  localTime,
+                  viewModel.steps.collectAsStateWithLifecycle(null).value ?: emptyList(),
+                  modifier
+               )
+            }
+         }
       }
    }
 }
 
 @Composable
-fun TransitScreen(time: LocalTime, steps: List<TransitStep>) {
-   val activeIndex = steps.indexOfFirst { it is TransitStep.Ride && time in it.startTime..it.endTime }.takeIf { it >= 0 }
+fun TransitScreen(time: LocalTime, steps: List<TransitStepUi>, modifier: Modifier = Modifier) {
+   val activeIndex = steps.indexOfFirst { it is TransitStepUi.Ride && time in it.startTime..it.endTime }.takeIf { it >= 0 }
    val state = rememberScalingLazyListState(
       initialCenterItemIndex = activeIndex?.plus(1) ?: 0,
       initialCenterItemScrollOffset = if (activeIndex != null) (with(LocalDensity.current) { -32.dp.roundToPx() }) else 0
    )
 
    Scaffold(
+      modifier = modifier,
       timeText = {
          val timeSource = object : TimeSource {
             override val currentTime: String
@@ -85,11 +106,11 @@ fun TransitScreen(time: LocalTime, steps: List<TransitStep>) {
 
             items(steps) {
                when (it) {
-                  is TransitStep.Ride -> {
+                  is TransitStepUi.Ride -> {
                      RideStep(it, time in it.startTime..it.endTime)
                   }
 
-                  is TransitStep.Walk -> WalkStep(it)
+                  is TransitStepUi.Walk -> WalkStep(it)
                }
             }
 
@@ -102,7 +123,7 @@ fun TransitScreen(time: LocalTime, steps: List<TransitStep>) {
 }
 
 @Composable
-private fun WalkStep(step: TransitStep.Walk) {
+private fun WalkStep(step: TransitStepUi.Walk) {
    val isAmbient = LocalAmbientCallbackController.current.ambientState is AmbientState.Ambient
 
    val backgroundPainter = if (isAmbient) {
@@ -126,7 +147,7 @@ private fun WalkStep(step: TransitStep.Walk) {
 }
 
 @Composable
-private fun RideStep(step: TransitStep.Ride, active: Boolean) {
+private fun RideStep(step: TransitStepUi.Ride, active: Boolean) {
    val isAmbient = LocalAmbientCallbackController.current.ambientState is AmbientState.Ambient
 
    val cardBackground = if (isAmbient) {
@@ -177,8 +198,8 @@ private fun RideStep(step: TransitStep.Ride, active: Boolean) {
 @Composable
 private fun PreviewScreen() {
    val steps = listOf(
-      TransitStep.Walk("Picadilly"),
-      TransitStep.Ride(
+      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Ride(
          "Northern",
          "Morden",
          "London Bridge",
@@ -186,8 +207,8 @@ private fun PreviewScreen() {
          LocalTime.of(7, 7),
          LocalTime.of(7, 12)
       ),
-      TransitStep.Walk("Picadilly"),
-      TransitStep.Ride(
+      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Ride(
          "Northern",
          "Morden",
          "London Bridge",
@@ -195,8 +216,8 @@ private fun PreviewScreen() {
          LocalTime.of(8, 7),
          LocalTime.of(8, 12)
       ),
-      TransitStep.Walk("Picadilly"),
-      TransitStep.Ride(
+      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Ride(
          "Northern",
          "Morden",
          "London Bridge",
@@ -219,8 +240,8 @@ private fun PreviewScreen() {
 @Composable
 private fun PreviewScreenAmbient() {
    val steps = listOf(
-      TransitStep.Walk("Picadilly"),
-      TransitStep.Ride(
+      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Ride(
          "Northern",
          "Morden",
          "London Bridge",
@@ -228,8 +249,8 @@ private fun PreviewScreenAmbient() {
          LocalTime.of(7, 7),
          LocalTime.of(7, 12)
       ),
-      TransitStep.Walk("Picadilly"),
-      TransitStep.Ride(
+      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Ride(
          "Northern",
          "Morden",
          "London Bridge",
@@ -237,8 +258,8 @@ private fun PreviewScreenAmbient() {
          LocalTime.of(8, 7),
          LocalTime.of(8, 12)
       ),
-      TransitStep.Walk("Picadilly"),
-      TransitStep.Ride(
+      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Ride(
          "Northern",
          "Morden",
          "London Bridge",
@@ -263,7 +284,7 @@ private fun PreviewWalkStep() {
    WearAppTheme {
       ProvideTestAmbientController(AmbientState.Interactive) {
          Box(Modifier.background(Color.Black)) {
-            WalkStep(TransitStep.Walk("Picadilly"))
+            WalkStep(TransitStepUi.Walk("Picadilly"))
          }
       }
    }
@@ -275,7 +296,7 @@ private fun PreviewWalkStepAmbient() {
    WearAppTheme {
       ProvideTestAmbientController(AmbientState.Ambient(false, false)) {
          Box(Modifier.background(Color.Black)) {
-            WalkStep(TransitStep.Walk("Picadilly"))
+            WalkStep(TransitStepUi.Walk("Picadilly"))
          }
       }
    }
@@ -287,7 +308,7 @@ private fun PreviewWalkStepWithLongText() {
    WearAppTheme {
       ProvideTestAmbientController(AmbientState.Interactive) {
          Box(Modifier.background(Color.Black)) {
-            WalkStep(TransitStep.Walk("Travelodge London Central Waterloo Aparthotels Farringdon"))
+            WalkStep(TransitStepUi.Walk("Travelodge London Central Waterloo Aparthotels Farringdon"))
          }
       }
    }
@@ -300,7 +321,7 @@ private fun PreviewRideStep() {
       ProvideTestAmbientController(AmbientState.Interactive) {
          Box(Modifier.background(Color.Black)) {
             RideStep(
-               TransitStep.Ride(
+               TransitStepUi.Ride(
                   "Northern",
                   "Morden",
                   "London Bridge",
@@ -322,7 +343,7 @@ private fun PreviewRideStepAmbient() {
       ProvideTestAmbientController(AmbientState.Ambient(false, false)) {
          Box(Modifier.background(Color.Black)) {
             RideStep(
-               TransitStep.Ride(
+               TransitStepUi.Ride(
                   "Northern",
                   "Morden",
                   "London Bridge",
@@ -344,7 +365,7 @@ private fun PreviewActiveRideStep() {
       ProvideTestAmbientController(AmbientState.Interactive) {
          Box(Modifier.background(Color.Black)) {
             RideStep(
-               TransitStep.Ride(
+               TransitStepUi.Ride(
                   "Northern",
                   "Morden",
                   "London Bridge",
@@ -366,7 +387,7 @@ private fun PreviewRideStepWithLongText() {
       ProvideTestAmbientController(AmbientState.Interactive) {
          Box(Modifier.background(Color.Black)) {
             RideStep(
-               TransitStep.Ride(
+               TransitStepUi.Ride(
                   "Elizabeth",
                   "Chancery Lane",
                   "London Bridge And Elephant and Castle Station",

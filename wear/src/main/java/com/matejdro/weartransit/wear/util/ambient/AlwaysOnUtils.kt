@@ -10,7 +10,7 @@ import java.time.Instant
 @Composable
 fun AmbientScreen(
    modifier: Modifier,
-   updateCallback: (ambientUpdateTimestamp: Instant) -> Unit,
+   updateCallback: (ambientUpdateTimestamp: Instant) -> Unit = {},
    content: @Composable (
       modifier: Modifier,
       ambientState: AmbientState,

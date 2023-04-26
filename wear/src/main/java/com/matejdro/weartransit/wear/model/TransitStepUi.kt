@@ -2,8 +2,8 @@ package com.matejdro.weartransit.wear.model
 
 import java.time.LocalTime
 
-sealed class TransitStep {
-   data class Walk(val to: String) : TransitStep()
+sealed class TransitStepUi {
+   data class Walk(val to: String) : TransitStepUi()
    data class Ride(
       val lineIdentifier: String,
       val lineDirection: String,
@@ -11,5 +11,5 @@ sealed class TransitStep {
       val to: String,
       val startTime: LocalTime,
       val endTime: LocalTime
-   ) : TransitStep()
+   ) : TransitStepUi()
 }

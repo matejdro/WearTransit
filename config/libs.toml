@@ -15,10 +15,15 @@ dagger = "2.45"
 detekt = "1.22.0"
 horologist-layout = "0.2.3"
 kotlin = "1.8.0"
+kotlin-coroutines = "1.6.4"
+kotlinova = "3.0.0-alpha10"
 junit4 = "4.13.2"
 logcat = "0.1"
 moshi = "1.14.0"
+okio = "3.3.0"
+playServices-wear = "18.0.0"
 versionsChecker = "0.44.0"
+wire = "4.5.6"
 whetstone = "0.5.0"
 
 [libraries]
@@ -46,13 +51,20 @@ detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", 
 horologist-layout = { module = "com.google.android.horologist:horologist-compose-layout", version.ref = "horologist.layout" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-coroutines-playServices = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlin-coroutines" }
+kotlinova-core = { module = "si.inova.kotlinova:core", version.ref = "kotlinova" }
 logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
 moshi-compiler = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
 moshi-runtime = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+playServices-wear = { module = "com.google.android.gms:play-services-wearable", version.ref = "playServices-wear" }
 versionsCheckerPlugin = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsChecker" }
+wire-runtime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }
+wire-moshi = { module = "com.squareup.wire:wire-moshi-adapter", version.ref = "wire" }
 whetstone-compiler = { module = "com.deliveryhero.whetstone:whetstone-compiler", version.ref = "whetstone" }
 whetstone-runtime = { module = "com.deliveryhero.whetstone:whetstone", version.ref = "whetstone" }
 
 [plugins]
 anvil = { id = "com.squareup.anvil", version.ref = "anvil" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+wire = { id = "com.squareup.wire", version.ref = "wire" }
