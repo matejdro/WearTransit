@@ -48,6 +48,9 @@ import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 
 class WearableActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvider {
    private val ambientCallbackController = AmbientCallbackController()
@@ -93,8 +96,9 @@ fun TransitScreen(time: LocalTime, steps: List<TransitStepUi>, modifier: Modifie
       modifier = modifier,
       timeText = {
          val timeSource = object : TimeSource {
+            val formatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(Locale.GERMANY)
             override val currentTime: String
-               @Composable get() = time.toString()
+               @Composable get() = formatter.format(time)
          }
          TimeText(timeSource = timeSource)
       },
