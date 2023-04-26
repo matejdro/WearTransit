@@ -2,6 +2,8 @@
 
 package com.matejdro.weartransit.wear
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -29,6 +31,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.input.rotary.onRotaryScrollEvent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -166,13 +169,19 @@ private fun WalkStep(step: TransitStepUi.Walk) {
       ColorPainter(Color.Gray.copy(alpha = 0.3f))
    }
 
+   val context = LocalContext.current
+
    val outlineModifier = if (isAmbient) {
       Modifier.border(1.dp, Color.Gray, shape = MaterialTheme.shapes.large)
    } else {
       Modifier
    }
 
-   Card(onClick = {}, backgroundPainter = backgroundPainter, modifier = outlineModifier) {
+   Card(onClick = {
+      val gmmIntentUri = Uri.parse("geo:0,0?q=" + Uri.encode(step.to))
+      val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+      context.startActivity(mapIntent)
+   }, backgroundPainter = backgroundPainter, modifier = outlineModifier) {
       Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
          Icon(painterResource(R.drawable.ic_walk), contentDescription = "Walk")
          Text(step.to)
