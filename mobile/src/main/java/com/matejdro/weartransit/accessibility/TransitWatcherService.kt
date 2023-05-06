@@ -103,7 +103,8 @@ private fun AccessibilityNodeInfo.extractTransitSteps(log: Boolean): List<Transi
 
       if (log) logcat { "START ${this.toJson()}" }
 
-      for ((stepIndex, step) in children().withIndex()) {
+      val accessibilitySteps = children().toList()
+      for ((stepIndex, step) in accessibilitySteps.withIndex()) {
          val children = step.children().toList()
          val fullText = step.getFullText()
 
@@ -124,7 +125,7 @@ private fun AccessibilityNodeInfo.extractTransitSteps(log: Boolean): List<Transi
             if (log) logcat { " START/END STEP ${step.toJson()}" }
             if (log) logcat { "START/END '$location' at $time" }
 
-            val startStep = stepIndex == 0
+            val startStep = stepIndex < accessibilitySteps.size / 2
 
             steps += if (startStep) {
                TransitStep(
