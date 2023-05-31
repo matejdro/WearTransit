@@ -26,17 +26,19 @@ class WearableViewModel(application: Application) : AndroidViewModel(application
 
          buildList {
             var emitWalk = false
+            var walkMinutes = 0
 
             for (step in steps) {
                when (step.mode) {
 
                   Mode.MODE_WALK -> {
                      emitWalk = true
+                     walkMinutes = step.minutes ?: -1
                   }
 
                   Mode.MODE_RIDE -> {
                      if (emitWalk) {
-                        add(TransitStepUi.Walk(step.from_location.orEmpty()))
+                        add(TransitStepUi.Walk(step.from_location.orEmpty(), step.minutes ?: 0))
                      }
 
                      add(
@@ -54,7 +56,7 @@ class WearableViewModel(application: Application) : AndroidViewModel(application
                   Mode.MODE_START -> {}
                   Mode.MODE_DESTINATION -> {
                      if (emitWalk) {
-                        add(TransitStepUi.Walk(step.to_location.orEmpty()))
+                        add(TransitStepUi.Walk(step.to_location.orEmpty(), walkMinutes))
                      }
                   }
                }
