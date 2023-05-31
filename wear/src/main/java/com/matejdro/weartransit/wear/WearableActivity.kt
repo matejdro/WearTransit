@@ -2,6 +2,7 @@
 
 package com.matejdro.weartransit.wear
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -72,6 +73,12 @@ class WearableActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackP
 
    override fun getAmbientCallback(): AmbientModeSupport.AmbientCallback {
       return ambientCallbackController
+   }
+
+   override fun onStart() {
+      super.onStart()
+
+      ambientCallbackController.onUpdateAmbient()
    }
 
    @OptIn(ExperimentalLifecycleComposeApi::class)
@@ -177,21 +184,27 @@ private fun WalkStep(step: TransitStepUi.Walk) {
       Modifier
    }
 
+   val destination = step.to
    Card(onClick = {
-      val gmmIntentUri = Uri.parse("geo:0,0?q=" + Uri.encode(step.to))
-      val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-      context.startActivity(mapIntent)
+      openNavigation(destination, context)
    }, backgroundPainter = backgroundPainter, modifier = outlineModifier) {
       Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
          Icon(painterResource(R.drawable.ic_walk), contentDescription = "Walk")
-         Text(step.to)
+         Text("${destination} [${step.minutes} min]")
       }
    }
+}
+
+private fun openNavigation(destination: String, context: Context) {
+   val gmmIntentUri = Uri.parse("geo:0,0?q=" + Uri.encode(destination))
+   val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+   context.startActivity(mapIntent)
 }
 
 @Composable
 private fun RideStep(step: TransitStepUi.Ride, active: Boolean) {
    val isAmbient = LocalAmbientCallbackController.current.ambientState is AmbientState.Ambient
+   val context = LocalContext.current
 
    val cardBackground = if (isAmbient) {
       Color.Transparent
@@ -211,7 +224,9 @@ private fun RideStep(step: TransitStepUi.Ride, active: Boolean) {
       Modifier
    }
 
-   Card(onClick = {}, backgroundPainter = ColorPainter(cardBackground), modifier = outlineModifier) {
+   Card(onClick = {
+      openNavigation(step.to, context)
+   }, backgroundPainter = ColorPainter(cardBackground), modifier = outlineModifier) {
       Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
          Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(painterResource(R.drawable.ic_ride), contentDescription = "Walk")
@@ -241,7 +256,7 @@ private fun RideStep(step: TransitStepUi.Ride, active: Boolean) {
 @Composable
 private fun PreviewScreen() {
    val steps = listOf(
-      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Walk("Picadilly", 4),
       TransitStepUi.Ride(
          "Northern",
          "Morden",
@@ -250,7 +265,7 @@ private fun PreviewScreen() {
          LocalTime.of(7, 7),
          LocalTime.of(7, 12)
       ),
-      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Walk("Picadilly", 4),
       TransitStepUi.Ride(
          "Northern",
          "Morden",
@@ -259,7 +274,7 @@ private fun PreviewScreen() {
          LocalTime.of(8, 7),
          LocalTime.of(8, 12)
       ),
-      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Walk("Picadilly", 4),
       TransitStepUi.Ride(
          "Northern",
          "Morden",
@@ -283,7 +298,7 @@ private fun PreviewScreen() {
 @Composable
 private fun PreviewScreenAmbient() {
    val steps = listOf(
-      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Walk("Picadilly", 4),
       TransitStepUi.Ride(
          "Northern",
          "Morden",
@@ -292,7 +307,7 @@ private fun PreviewScreenAmbient() {
          LocalTime.of(7, 7),
          LocalTime.of(7, 12)
       ),
-      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Walk("Picadilly", 4),
       TransitStepUi.Ride(
          "Northern",
          "Morden",
@@ -301,7 +316,7 @@ private fun PreviewScreenAmbient() {
          LocalTime.of(8, 7),
          LocalTime.of(8, 12)
       ),
-      TransitStepUi.Walk("Picadilly"),
+      TransitStepUi.Walk("Picadilly", 4),
       TransitStepUi.Ride(
          "Northern",
          "Morden",
@@ -327,7 +342,7 @@ private fun PreviewWalkStep() {
    WearAppTheme {
       ProvideTestAmbientController(AmbientState.Interactive) {
          Box(Modifier.background(Color.Black)) {
-            WalkStep(TransitStepUi.Walk("Picadilly"))
+            WalkStep(TransitStepUi.Walk("Picadilly", 4))
          }
       }
    }
@@ -339,7 +354,7 @@ private fun PreviewWalkStepAmbient() {
    WearAppTheme {
       ProvideTestAmbientController(AmbientState.Ambient(false, false)) {
          Box(Modifier.background(Color.Black)) {
-            WalkStep(TransitStepUi.Walk("Picadilly"))
+            WalkStep(TransitStepUi.Walk("Picadilly", 4))
          }
       }
    }
@@ -351,7 +366,7 @@ private fun PreviewWalkStepWithLongText() {
    WearAppTheme {
       ProvideTestAmbientController(AmbientState.Interactive) {
          Box(Modifier.background(Color.Black)) {
-            WalkStep(TransitStepUi.Walk("Travelodge London Central Waterloo Aparthotels Farringdon"))
+            WalkStep(TransitStepUi.Walk("Travelodge London Central Waterloo Aparthotels Farringdon", 7))
          }
       }
    }
