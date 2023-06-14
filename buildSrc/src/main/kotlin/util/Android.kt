@@ -15,10 +15,10 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
  */
 fun Project.commonAndroid(
    block: Action<InternalTestedExtension<
-         BuildFeatures,
-         BuildType,
-         DefaultConfig,
-         ProductFlavor>>
+      BuildFeatures,
+      BuildType,
+      DefaultConfig,
+      ProductFlavor>>
 ) {
    (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("android", block)
 }

@@ -22,6 +22,7 @@ dependencies {
    implementation(libs.android.agp)
    implementation(libs.detekt.plugin)
    implementation(libs.kotlin.plugin)
+   implementation(libs.kotlinova.gradle)
    implementation(libs.versionsCheckerPlugin)
    implementation(libs.okio)
 

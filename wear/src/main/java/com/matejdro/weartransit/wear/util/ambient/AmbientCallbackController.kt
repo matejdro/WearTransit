@@ -1,6 +1,5 @@
 package com.matejdro.weartransit.wear.util.ambient
 
-import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -8,7 +7,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.wear.ambient.AmbientModeSupport
+import androidx.wear.ambient.AmbientLifecycleObserver
 import java.time.Clock
 import java.time.Instant
 
@@ -21,7 +20,7 @@ internal var clock: Clock = Clock.systemDefaultZone()
 val LocalAmbientCallbackController =
    compositionLocalOf<AmbientCallbackController> { throw IllegalStateException("Missing AmbientCallbackController") }
 
-class AmbientCallbackController : AmbientModeSupport.AmbientCallback() {
+class AmbientCallbackController : AmbientLifecycleObserver.AmbientLifecycleCallback {
    var updateCallback: (() -> Unit)? = null
 
    /**
@@ -37,12 +36,9 @@ class AmbientCallbackController : AmbientModeSupport.AmbientCallback() {
    /**
     * Prepares the UI for ambient mode.
     */
-   override fun onEnterAmbient(ambientDetails: Bundle) {
+   override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) {
       super.onEnterAmbient(ambientDetails)
-      val isLowBitAmbient = ambientDetails.getBoolean(
-         AmbientModeSupport.EXTRA_LOWBIT_AMBIENT,
-         false
-      )
+      val isLowBitAmbient = ambientDetails.deviceHasLowBitAmbient
 
       // Official method returns false even for Galaxy Watch 4, which has OLED screen??? Force at true just to be safe.
       val doBurnInProtection = true

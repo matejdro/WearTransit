@@ -32,6 +32,10 @@ tasks.withType<DependencyUpdatesTask> {
          candidate.version.contains("M", ignoreCase = true) ||
          candidate.version.contains("eap", ignoreCase = true)
    }
+
+   // Output library version report into json that toml-version-bump will read
+   reportfileName = "versions"
+   outputFormatter = "json"
 }
 
 detekt {

@@ -1,5 +1,4 @@
 import util.commonAndroid
-import util.commonKotlinOptions
 
 plugins {
    id("org.jetbrains.kotlin.android")
@@ -12,12 +11,8 @@ commonAndroid {
    compileSdk = 33
 
    compileOptions {
-      sourceCompatibility = JavaVersion.VERSION_11
-      targetCompatibility = JavaVersion.VERSION_11
-   }
-
-   commonKotlinOptions {
-      jvmTarget = "11"
+      sourceCompatibility = JavaVersion.VERSION_17
+      targetCompatibility = JavaVersion.VERSION_17
    }
 
    defaultConfig {
@@ -29,4 +24,8 @@ commonAndroid {
          excludes += "/META-INF/{AL2.0,LGPL2.1}"
       }
    }
+}
+
+kotlin {
+   jvmToolchain(17)
 }

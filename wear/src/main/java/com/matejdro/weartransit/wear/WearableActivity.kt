@@ -38,19 +38,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.wear.ambient.AmbientModeSupport
+import androidx.wear.ambient.AmbientLifecycleObserver
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.foundation.lazy.items
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.Card
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
-import androidx.wear.compose.material.ScalingLazyColumn
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeSource
 import androidx.wear.compose.material.TimeText
-import androidx.wear.compose.material.items
-import androidx.wear.compose.material.rememberScalingLazyListState
 import com.matejdro.weartransit.R
 import com.matejdro.weartransit.theme.WearAppTheme
 import com.matejdro.weartransit.wear.model.TransitStepUi
@@ -68,12 +67,8 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 
-class WearableActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvider {
+class WearableActivity : FragmentActivity() {
    private val ambientCallbackController = AmbientCallbackController()
-
-   override fun getAmbientCallback(): AmbientModeSupport.AmbientCallback {
-      return ambientCallbackController
-   }
 
    override fun onStart() {
       super.onStart()
@@ -81,11 +76,11 @@ class WearableActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackP
       ambientCallbackController.onUpdateAmbient()
    }
 
-   @OptIn(ExperimentalLifecycleComposeApi::class)
    override fun onCreate(savedInstanceState: Bundle?) {
       super.onCreate(savedInstanceState)
 
-      AmbientModeSupport.attach(this)
+      val lifecycleObserver = AmbientLifecycleObserver(this, ambientCallbackController)
+      lifecycle.addObserver(lifecycleObserver)
 
       setContent {
          CompositionLocalProvider(LocalAmbientCallbackController provides ambientCallbackController) {
@@ -190,7 +185,7 @@ private fun WalkStep(step: TransitStepUi.Walk) {
    }, backgroundPainter = backgroundPainter, modifier = outlineModifier) {
       Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
          Icon(painterResource(R.drawable.ic_walk), contentDescription = "Walk")
-         Text("${destination} [${step.minutes} min]")
+         Text("$destination [${step.minutes} min]")
       }
    }
 }
