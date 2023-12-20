@@ -1,6 +1,5 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import org.gradle.accessors.dm.LibrariesForLibs
-import org.gradle.kotlin.dsl.the
 import util.commonAndroid
 import util.isAndroidProject
 
@@ -39,7 +38,7 @@ tasks.withType<DependencyUpdatesTask> {
 }
 
 detekt {
-   config = files("$rootDir/config/detekt.yml")
+   config.from("$rootDir/config/detekt.yml")
 }
 
 dependencies {
