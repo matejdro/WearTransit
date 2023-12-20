@@ -47,8 +47,8 @@ class WearableViewModel(application: Application) : AndroidViewModel(application
                            step.line_description.orEmpty(),
                            step.from_location.orEmpty(),
                            step.to_location.orEmpty(),
-                           step.from_time!!.toLocalTime(),
-                           step.to_time!!.toLocalTime()
+                           step.from_time?.toLocalTime(),
+                           step.to_time?.toLocalTime()
                         )
                      )
                   }

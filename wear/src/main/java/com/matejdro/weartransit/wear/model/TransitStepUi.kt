@@ -9,7 +9,7 @@ sealed class TransitStepUi {
       val lineDirection: String,
       val from: String,
       val to: String,
-      val startTime: LocalTime,
-      val endTime: LocalTime
+      val startTime: LocalTime?,
+      val endTime: LocalTime?
    ) : TransitStepUi()
 }

@@ -159,10 +159,11 @@ private fun AccessibilityNodeInfo.extractTransitSteps(log: Boolean): List<Transi
             val startLocation = rideNode.getChild(0).getFullText(includeContentDescription = false)
             val line = rideNode.getChild(1).text.trim()
             val lineName = rideNode.getChild(2).text
-            val departureTime = LocalTime.parse(DEPART_TIME_REGEX.find(fullText)!!.groupValues.elementAt(1))
+            val departMatch = DEPART_TIME_REGEX.find(fullText)
+            val departureTime = departMatch?.groupValues?.elementAt(1)?.let { LocalTime.parse(it) }
 
             val endLocation: String
-            val endTime: LocalTime
+            val endTime: LocalTime?
             val endNode = children.elementAt(2)
             val locationTimeMatch = endNode.text?.let { LOCATION_AND_TIME_REGEX.find(it) }
             if (locationTimeMatch != null) {
@@ -170,20 +171,20 @@ private fun AccessibilityNodeInfo.extractTransitSteps(log: Boolean): List<Transi
                endTime = LocalTime.parse(locationTimeMatch.groupValues.elementAt(2))
             } else {
                endLocation = endNode.getChild(0).text.toString()
-               endTime = LocalTime.parse(endNode.getChild(1).text)
+               endTime = endNode.getChild(1).text?.let { LocalTime.parse(it) }
             }
 
             if (log) {
                logcat {
                   "  RIDE LINE $line ($lineName) FROM $startLocation " +
-                     "AT $departureTime UNTIL $endLocation at $endTime"
+                     "AT ${departureTime ?: "null"} UNTIL $endLocation at ${endTime ?: "null"}"
                }
             }
 
             steps += TransitStep(
                Mode.MODE_RIDE,
-               from_time = departureTime.toProtobuf(),
-               to_time = endTime.toProtobuf(),
+               from_time = departureTime?.toProtobuf(),
+               to_time = endTime?.toProtobuf(),
                from_location = startLocation,
                to_location = endLocation,
                line_name = line.toString(),

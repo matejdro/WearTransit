@@ -106,7 +106,13 @@ fun TransitScreen(time: LocalTime, steps: List<TransitStepUi>, modifier: Modifie
    val scope = rememberCoroutineScope()
    val focusRequester = remember { FocusRequester() }
 
-   val activeIndex = steps.indexOfFirst { it is TransitStepUi.Ride && time in it.startTime..it.endTime }.takeIf { it >= 0 }
+   val activeIndex = steps.indexOfFirst {
+      it is TransitStepUi.Ride &&
+         it.startTime != null &&
+         it.endTime != null &&
+         time in it.startTime..it.endTime
+   }.takeIf { it >= 0 }
+
    val state = rememberScalingLazyListState(
       initialCenterItemIndex = activeIndex?.plus(1) ?: 0,
       initialCenterItemScrollOffset = if (activeIndex != null) (with(LocalDensity.current) { -32.dp.roundToPx() }) else 0
@@ -142,7 +148,7 @@ fun TransitScreen(time: LocalTime, steps: List<TransitStepUi>, modifier: Modifie
             items(steps) {
                when (it) {
                   is TransitStepUi.Ride -> {
-                     RideStep(it, time in it.startTime..it.endTime)
+                     RideStep(it, it.startTime != null && it.endTime != null && time in it.startTime..it.endTime)
                   }
 
                   is TransitStepUi.Walk -> WalkStep(it)
@@ -229,7 +235,7 @@ private fun RideStep(step: TransitStepUi.Ride, active: Boolean) {
          }
 
          Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(step.startTime.toString())
+            Text(step.startTime?.toString() ?: "")
             Text(step.from)
          }
 
@@ -240,7 +246,7 @@ private fun RideStep(step: TransitStepUi.Ride, active: Boolean) {
          )
 
          Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(step.endTime.toString())
+            Text(step.endTime?.toString() ?: "")
             Text(step.to)
          }
       }
