@@ -1,3 +1,4 @@
+import org.gradle.accessors.dm.LibrariesForLibs
 import util.commonAndroid
 
 plugins {
@@ -7,19 +8,23 @@ plugins {
    id("org.gradle.android.cache-fix")
 }
 
+val libs = the<LibrariesForLibs>()
+
 commonAndroid {
    compileSdk = 34
 
    compileOptions {
       sourceCompatibility = JavaVersion.VERSION_17
       targetCompatibility = JavaVersion.VERSION_17
+
+      isCoreLibraryDesugaringEnabled = true
    }
 
    defaultConfig {
       testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
    }
 
-   packagingOptions {
+   packaging {
       resources {
          excludes += "/META-INF/{AL2.0,LGPL2.1}"
       }
@@ -28,4 +33,8 @@ commonAndroid {
 
 kotlin {
    jvmToolchain(17)
+}
+
+dependencies {
+   add("coreLibraryDesugaring", libs.desugarJdkLib)
 }
